@@ -1,0 +1,12 @@
+LANGUAGES   += c++
+COMPILEOPTS += -std=c++11
+COMPILEOPTS += -Wall
+COMPILEOPTS += -Wextra
+COMPILEOPTS += -Werror
+COMPILEOPTS += -pedantic
+
+LANGUAGES   += c++
+COMPILEOPTS += -Isrc
+
+BINARIES    += dreamer-objdump
+SOURCES     += objdump.c++

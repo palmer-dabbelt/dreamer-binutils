@@ -1,0 +1,13 @@
+/bin/
+/lib/
+/obj/
+/check/
+
+/Configfiles/local
+/Configfile.local
+/Makefile*
+
+*~
+
+/doc/*.pdf
+/doc/.tek_cache
