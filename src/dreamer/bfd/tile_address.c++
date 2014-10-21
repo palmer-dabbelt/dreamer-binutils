@@ -28,11 +28,16 @@ tile_address::tile_address(size_t x, size_t y)
 {
 }
 
+std::string tile_address::name(void) const
+{
+    std::stringstream ss;
+    ss << "(" << _x << "," << _y << ")";
+    return ss.str();
+}
+
 std::string tile_address::mangled_name(void) const
 {
     std::stringstream ss;
     ss << _x << "__" << _y;
-    std::string out;
-    ss >> out;
-    return out;
+    return ss.str();
 }

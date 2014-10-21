@@ -43,6 +43,7 @@ namespace dreamer {
             tile_address(size_t x, size_t y);
 
         public:
+            std::string name(void) const;
             std::string mangled_name(void) const;
         };
     }

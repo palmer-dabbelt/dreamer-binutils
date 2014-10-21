@@ -40,9 +40,29 @@ namespace dreamer {
         private:
             union inst {
                 uint32_t bits;
+
+                /* These bits are true for all instruction encoding
+                 * formats, so you can always look at them!  This
+                 * matches the definiton of the FixInst from Scala. */
                 struct {
-                    int opcode : 5;
-                } fields __attribute__((packed));
+                    unsigned int out : 4;
+                    unsigned int in  : 2;
+                    unsigned int zi  : 5;
+                    unsigned int yi  : 5;
+                    unsigned int iy  : 1;
+                    unsigned int xi  : 5;
+                    unsigned int di  : 5;
+                    unsigned int op  : 5;
+                } inst __attribute__((packed));
+
+                /* The format used for "lit". */
+                struct {
+                    unsigned int out : 4;
+                    unsigned int in  : 2;
+                    unsigned int lit : 16;
+                    unsigned int di  : 5;
+                    unsigned int op  : 5;
+                } lit __attribute__((packed));
             };
 
         private:

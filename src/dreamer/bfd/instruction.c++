@@ -54,19 +54,143 @@ bool instruction::sanity_check(void) const
 
 std::string instruction::to_string(void) const
 {
-    auto to_hex_string = [&]() -> std::string
+    std::stringstream ss;
+
+    auto netoutname = [&](void)
         {
+            auto W = _bits.inst.out & 0x1 ? "W" : "";
+            auto N = _bits.inst.out & 0x2 ? "N" : "";
+            auto E = _bits.inst.out & 0x4 ? "E" : "";
+            auto S = _bits.inst.out & 0x8 ? "S" : "";
             std::stringstream ss;
-            ss << std::hex << _bits.bits;
-            std::string out;
-            ss >> out;
-            return std::string("0x") + out;
+            ss << W << N << E << S;
+            return ss.str();
         };
 
-    if (this->has_debug() == true)
-        return to_hex_string() + " " + this->debug();
+    auto netinname = [&](void)
+        {
+            switch (_bits.inst.in) {
+            case 0: return "W";
+            case 1: return "N";
+            case 2: return "E";
+            case 3: return "S";
+            }
+            abort();
+        };
+
+    auto netdest = [&](void) -> std::string
+        {
+            if (_bits.inst.di == 31)
+                return netoutname();
+
+            std::stringstream ss;
+            ss << "x" << _bits.inst.di;
+            return ss.str();
+        };
+
+    auto netsrc = [&](int reg) -> std::string
+        {
+            if (reg == 31)
+                return netinname();
+
+            std::stringstream ss;
+            ss << "x" << reg;
+            return ss.str();
+        };
+
+    auto netd = [&](void) { return netsrc(_bits.inst.di); };
+    auto netx = [&](void) { return netsrc(_bits.inst.xi); };
+    auto nety = [&](void) { 
+        if (_bits.inst.iy == 0)
+            return netsrc(_bits.inst.yi);
+        else
+            return std::to_string(_bits.inst.yi);
+    };
+    auto netz = [&](void) { return netsrc(_bits.inst.zi); };
+
+    auto widthapos = [&](int width) -> std::string
+        {
+            if (width == 0)
+                return "";
+
+            std::stringstream ss;
+            ss << "'" << width;
+            return ss.str();
+        };
+
+    auto zw = [&](void) { return widthapos(_bits.inst.zi); };
+
+    auto y_is_const_zero = [&](void)
+        { return _bits.inst.iy == 1 && _bits.inst.yi == 0; };
+
+    switch (_bits.inst.op) {
+    case 0:
+        ss << "nop";
+        break;
+
+    case 2:
+        ss << netdest() << " = lit " << _bits.lit.lit;
+        break;
+
+    case 10:
+        ss << netdest() << " = eq " << netx() << " " << nety();
+        break;
+
+    case 12:
+        ss << netdest() << " = mux " << netx() << " " << nety() << " " << netz();
+        break;
+
+    case 14:
+        ss << netdest() << " = rsh" << zw() << " " << netx() << " " << nety();
+        break;
+
+    case 17:
+        ss << netdest() << " = cat" << zw() << " " << netx() << " " << nety();
+        break;
+
+    case 18:
+        if (y_is_const_zero() == true)
+            ss << netdest() << " = " << netx();
+        else
+            ss << netdest() << " = add " << netx() << " " << nety();
+        break;
+
+    case 19:
+        ss << netdest() << " = sub " << netx() << " " << nety();
+        break;
+
+    case 22:
+        ss << netdest() << " = mul" << zw() << " " << netx() << " " << nety();
+        break;
+
+    case 24:
+        ss << netdest() << " = ld " << netx() << " " << nety();
+        break;
+
+    case 25:
+        ss << "st " << netd() << " " << nety() << " " << netz();
+        break;
+
+    case 26:
+        ss << netdest() << " = ldi " << _bits.inst.xi;
+        break;
+
+    case 27:
+        ss << "sti " << netx() << " " << _bits.inst.yi;
+        break;
+
+    default:
+        fprintf(stderr, "Unknown opcode: '%d'\n", _bits.inst.op);
+        abort();
+        break;
+    }
+
+    if ((_bits.inst.di != 31) && (_bits.inst.out != 0))
+        ss << " ; " << netoutname() << " <- " << netinname();
     else
-        return to_hex_string();
+        ss << " ";
+
+    return ss.str();
 }
 
 instruction_ptr instruction::parse_hex(const std::string hex)
