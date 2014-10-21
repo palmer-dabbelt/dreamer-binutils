@@ -36,7 +36,8 @@ static inline std::string rtrim(const std::string &s_in) {
 
 instruction::instruction(union inst bits)
     : _bits(bits),
-      _has_debug(false)
+      _has_debug(false),
+      _debug("")
 {
 }
 

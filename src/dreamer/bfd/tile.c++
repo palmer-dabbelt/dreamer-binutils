@@ -21,11 +21,52 @@
 #include "tile.h++"
 using namespace dreamer::bfd;
 
+static std::vector<instruction_ptr>
+lo(const std::vector<instruction_ptr>& instructions,
+   size_t count);
+
+static std::vector<instruction_ptr>
+hi(const std::vector<instruction_ptr>& instructions,
+   size_t count);
+
 tile::tile(const tile_address& addr,
-           size_t lo_instruction_count,
+           size_t lo_instruction_count __attribute__((unused)),
            std::vector<instruction_ptr> instructions)
     : _addr(addr),
-      _lo(instructions.begin(), instructions.begin() + lo_instruction_count),
-      _hi(instructions.begin() + lo_instruction_count, instructions.end())
+      _lo(::lo(instructions, lo_instruction_count)),
+      _hi(::hi(instructions, lo_instruction_count))
 {
+}
+
+
+std::vector<instruction_ptr>
+lo(const std::vector<instruction_ptr>& instructions,
+   size_t count)
+{
+    std::vector<instruction_ptr> out(count);
+
+    if (count >= instructions.size()) {
+        fprintf(stderr, "lo_count greater than instruction count: %llu %llu\n",
+                (long long unsigned)count,
+                (long long unsigned)instructions.size()
+            );
+        abort();
+    }
+
+    for (size_t i = 0; i < count; ++i)
+        out[i] = instructions[i];
+
+    return out;
+}
+
+std::vector<instruction_ptr>
+hi(const std::vector<instruction_ptr>& instructions,
+   size_t count)
+{
+    std::vector<instruction_ptr> out(instructions.size() - count);
+
+    for (size_t i = count; i < instructions.size(); ++i)
+        out[i - count] = instructions[i];
+
+    return out;
 }

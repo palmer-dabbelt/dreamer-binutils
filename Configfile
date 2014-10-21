@@ -8,5 +8,8 @@ COMPILEOPTS += -pedantic
 LANGUAGES   += c++
 COMPILEOPTS += -Isrc
 
+LANGUAGES   += bash
+
 BINARIES    += dreamer-objdump
 SOURCES     += objdump.c++
+TESTSRC     += histogram.bash

@@ -170,10 +170,14 @@ object_ptr object::read_hex_file(FILE *file)
 
             auto address = tile_address(x, y);
             auto t = std::make_shared<tile>(address, lo, instructions);
+            if (t == NULL)
+                abort();
             tiles.push_back(t);
 
+            if (line[0] == '\0')
+                break;
+
             goto reparse_line;
-            abort();
         }
 
         /* Some input formats just set something special on one single
